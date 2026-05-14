@@ -188,3 +188,18 @@ Expected result after successful flash:
 RTX 3080 BAR1: 10240 MiB   (up from 256 MiB)
 PCIe ReBAR BAR1 register: supported: 64MB 128MB ... 10240MB
 ```
+
+---
+
+## Applied Changes
+
+### 2026-05-14 — `OLLAMA_MAIN_GPU=0`
+
+Added to `/etc/systemd/system/ollama.service.d/override.conf`. Forces the RTX 5080
+(CUDA device 0) to handle embedding and output layers — the highest-bandwidth operations
+in transformer inference. Previously unset; default behaviour was undefined.
+
+Ollama restarted and confirmed active with setting live:
+```
+OLLAMA_MAIN_GPU=0
+```
