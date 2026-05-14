@@ -203,3 +203,22 @@ Ollama restarted and confirmed active with setting live:
 ```
 OLLAMA_MAIN_GPU=0
 ```
+
+### 2026-05-14 15:15 — Live workload observation (gemma4:31b-it-q4_K_M)
+
+Spot-checked with `peek.sh` and `nvidia-smi` while inference was running.
+
+| | RTX 5080 (GPU 0) | RTX 3080 (GPU 1) |
+|--|--|--|
+| Compute util | 31% | 25% |
+| VRAM used | 14.6 GB / 16.3 GB | 8.9 GB / 10.2 GB |
+| Temperature | 61°C | 60°C |
+| Power draw | 100W / 275W cap | 156W / 275W cap |
+| SM clock | 2655 MHz | 1785 MHz |
+
+Both GPUs active and contributing. Temps well within range. Neither near power cap.
+Runner PID up 1:47, no stuck/pending requests.
+
+Note: 3080 draws more power relative to its compute share (156W vs 100W on the 5080)
+— consistent with higher per-operation cost from the x4 PCIe + no-P2P constraint, but
+within expected bounds. No anomalies.
