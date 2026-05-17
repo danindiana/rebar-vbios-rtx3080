@@ -1,0 +1,70 @@
+digraph capability_stack {
+    graph [
+        label="Diagram 4: The Dual-Use Capability Stack\nWhat BAR1 restriction degrades — and why it matters for export control"
+        labelloc=t
+        fontname="Helvetica"
+        fontsize=16
+        rankdir=TB
+        bgcolor="white"
+        pad=0.5
+        splines=ortho
+        nodesep=0.5
+        ranksep=0.6
+    ]
+    node [fontname="Helvetica" fontsize=11 style=filled]
+    edge [fontname="Helvetica" fontsize=10]
+
+    // Hardware base
+    vram [label="10 GB GDDR6X VRAM\n(physically present, always)" shape=box fillcolor="#6c757d" fontcolor="white" width=4]
+
+    // BAR1 layer — the firmware gate
+    bar_256 [label="BAR1 = 256 MiB (launch)\nOnly 2.5% of VRAM CPU-addressable\nwithout remap cycle" shape=box fillcolor="#dc3545" fontcolor="white" width=4]
+    bar_8g  [label="BAR1 = 8192 MiB (post-V4)\n80% of VRAM CPU-addressable directly\nno remap required" shape=box fillcolor="#28a745" fontcolor="white" width=4]
+
+    // Capabilities degraded at 256 MiB
+    subgraph cluster_degraded {
+        label="Capabilities degraded at 256 MiB BAR1"
+        style=filled color="#f8d7da" fontsize=12
+
+        p2p    [label="GPU↔GPU Peer-to-Peer\nTransfer Efficiency\n[multi-GPU cluster scaling]" shape=box fillcolor="#e74c3c" fontcolor="white"]
+        stage  [label="CPU→GPU Tensor Staging\nThroughput\n[large model training]" shape=box fillcolor="#e74c3c" fontcolor="white"]
+        inf    [label="Multi-GPU Inference\nScaling Efficiency\n[distributed inference]" shape=box fillcolor="#e74c3c" fontcolor="white"]
+        hpc    [label="HPC Workload\nMemory Bandwidth\n[simulation, cryptanalysis]" shape=box fillcolor="#e74c3c" fontcolor="white"]
+    }
+
+    // Capabilities unaffected (gaming)
+    subgraph cluster_unaffected {
+        label="Capabilities unaffected at 256 MiB BAR1\n(mass-market consumer use)"
+        style=filled color="#d4edda" fontsize=12
+
+        game  [label="Gaming\nFrame rendering\n[single GPU, small transfers]" shape=box fillcolor="#28a745" fontcolor="white"]
+        media [label="Media playback\nVideo decode\n[driver handles internally]" shape=box fillcolor="#28a745" fontcolor="white"]
+        disp  [label="Display output\nDesktop compositing\n[no large host transfers]" shape=box fillcolor="#28a745" fontcolor="white"]
+    }
+
+    // EAR relevance
+    ear [label="EAR / Dual-Use Relevance:\nDegraded capabilities are exactly those\ntargeted by ECCN 3A090 metrics:\n• aggregate cluster throughput\n• multi-node scaling efficiency\n• memory bandwidth at scale" shape=note fillcolor="#fff3cd" fontcolor="#856404" fontsize=11 width=4]
+
+    vram -> bar_256 [label="firmware exposes\nonly 256 MiB" color="#dc3545" penwidth=2]
+    vram -> bar_8g  [label="VBIOS update\nexposes 8192 MiB" color="#28a745" penwidth=2 style=dashed]
+
+    bar_256 -> p2p   [label="throttled" color="#dc3545"]
+    bar_256 -> stage [label="throttled" color="#dc3545"]
+    bar_256 -> inf   [label="throttled" color="#dc3545"]
+    bar_256 -> hpc   [label="throttled" color="#dc3545"]
+
+    bar_256 -> game  [label="unaffected" color="#28a745"]
+    bar_256 -> media [label="unaffected" color="#28a745"]
+    bar_256 -> disp  [label="unaffected" color="#28a745"]
+
+    p2p   -> ear [style=invis]
+    stage -> ear [style=invis]
+    inf   -> ear [style=invis]
+    hpc   -> ear [style=invis]
+
+    bar_8g -> ear [label="lifting restriction\nmoves card toward\ncontrolled capability range" color="#e65100" style=dashed fontsize=10]
+
+    {rank=same; bar_256 bar_8g}
+    {rank=same; p2p stage inf hpc}
+    {rank=same; game media disp}
+}

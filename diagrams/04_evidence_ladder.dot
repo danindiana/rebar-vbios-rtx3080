@@ -1,0 +1,62 @@
+digraph G {
+rankdir=TB;
+label=<EVIDENCE LADDER: WHAT IS PROVEN VS WHAT IS HYPOTHESIS<BR/><FONT POINT-SIZE="12">Use this to prevent the documentation from overclaiming</FONT>>;
+
+graph [
+  bgcolor="#05070d",
+  color="#2ee6ff",
+  fontname="DejaVu Sans",
+  fontcolor="#f8fafc",
+  fontsize=18,
+  labelloc="t",
+  margin=0.2,
+  nodesep=0.45,
+  ranksep=0.65,
+  pad=0.25,
+  outputorder="edgesfirst",
+  splines=ortho
+];
+node [
+  shape=box,
+  style="rounded,filled",
+  fontname="DejaVu Sans",
+  fontsize=12,
+  color="#38d9ff",
+  penwidth=1.5,
+  fillcolor="#111827",
+  fontcolor="#f8fafc",
+  margin="0.12,0.08"
+];
+edge [
+  color="#94a3b8",
+  fontname="DejaVu Sans",
+  fontsize=10,
+  fontcolor="#cbd5e1",
+  arrowsize=0.8,
+  penwidth=1.3
+];
+
+
+subgraph cluster_proven_local {
+  label="Proven locally in the RTX 3080 case"; fontcolor="#34d399"; color="#065f46"; style="rounded,dashed";
+  rom [label=<Firmware identity claim<BR/><FONT POINT-SIZE="10">ROM metadata + nvflash --check + subsystem match</FONT>>, fillcolor="#064e3b", color="#34d399"];
+  bar [label=<BAR1 aperture claim<BR/><FONT POINT-SIZE="10">nvidia-smi -q after reboot on both GPUs</FONT>>, fillcolor="#064e3b", color="#34d399"];
+  perf [label=<Performance claim<BR/><FONT POINT-SIZE="10">only S_measured on worlock's real workload</FONT>>, fillcolor="#064e3b", color="#34d399"];
+}
+
+subgraph cluster_public {
+  label="Proven public precedent"; fontcolor="#60a5fa"; color="#1d4ed8"; style="rounded,dashed";
+  bis [label=<BIS / EAR metrics<BR/><FONT POINT-SIZE="10">advanced-computing controls use performance / transfer thresholds</FONT>>, fillcolor="#172554", color="#60a5fa"];
+  variants [label=<A800 / H800 style derivatives<BR/><FONT POINT-SIZE="10">configured transfer / capability envelope for compliance</FONT>>, fillcolor="#172554", color="#60a5fa"];
+}
+
+plausible [label=<Plausible mechanism<BR/><FONT POINT-SIZE="10">BAR1 / firmware gating can act as a soft product-segmentation lever</FONT>>, fillcolor="#451a03", color="#f59e0b"];
+unproven [label=<Unproven intent<BR/><FONT POINT-SIZE="10">RTX 30 launch BAR1 limit as export-control throttle</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+general [label=<Generalization not proven<BR/><FONT POINT-SIZE="10">S not portable across models, batch sizes, quantization, prompts, GPU configs</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+
+rom -> plausible [style=dashed, label="shows controllable firmware lever"];
+bar -> plausible [style=dashed];
+bis -> variants -> plausible [label="precedes analogy"];
+plausible -> unproven [style=dashed, label="requires evidence of intent"];
+perf -> general [style=dashed];
+}

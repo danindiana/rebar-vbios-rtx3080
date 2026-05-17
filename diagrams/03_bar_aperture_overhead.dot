@@ -1,0 +1,65 @@
+digraph G {
+rankdir=LR;
+label=<CPU / DRIVER OVERHEAD: 256 MiB VS 8192 MiB BAR1<BR/><FONT POINT-SIZE="12">Same bytes cross PCIe; different number of mapping / visibility epochs</FONT>>;
+
+graph [
+  bgcolor="#05070d",
+  color="#2ee6ff",
+  fontname="DejaVu Sans",
+  fontcolor="#f8fafc",
+  fontsize=18,
+  labelloc="t",
+  margin=0.2,
+  nodesep=0.45,
+  ranksep=0.65,
+  pad=0.25,
+  outputorder="edgesfirst",
+  splines=ortho
+];
+node [
+  shape=box,
+  style="rounded,filled",
+  fontname="DejaVu Sans",
+  fontsize=12,
+  color="#38d9ff",
+  penwidth=1.5,
+  fillcolor="#111827",
+  fontcolor="#f8fafc",
+  margin="0.12,0.08"
+];
+edge [
+  color="#94a3b8",
+  fontname="DejaVu Sans",
+  fontsize=10,
+  fontcolor="#cbd5e1",
+  arrowsize=0.8,
+  penwidth=1.3
+];
+
+
+workload [label=<Large VRAM population event<BR/><FONT POINT-SIZE="10">model weights, KV cache, staging buffers, multi-GPU tensors</FONT>>, fillcolor="#0f172a", color="#38d9ff"];
+
+subgraph cluster_small {
+  label="256 MiB BAR1"; fontcolor="#fb7185"; color="#7f1d1d"; style="rounded,dashed";
+  small_visible [label=<2.5% of 10 GiB visible<BR/><FONT POINT-SIZE="10">≈ 35 epochs for 8778 MiB; ≈ 40 for full 10 GiB</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+  loop [label=<Loop per epoch<BR/><FONT POINT-SIZE="10">map / expose chunk → fence / flush → transfer → next chunk</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+  overhead [label=<Fixed CPU costs multiply<BR/><FONT POINT-SIZE="10">driver locks, MMIO ordering, TLB pressure, sync points</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+  latency [label=<Latency-bound failure mode<BR/><FONT POINT-SIZE="10">transfer path waits on control-plane churn</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+}
+
+subgraph cluster_large {
+  label="8192 MiB BAR1"; fontcolor="#34d399"; color="#065f46"; style="rounded,dashed";
+  large_visible [label=<≈80% of 10 GiB visible<BR/><FONT POINT-SIZE="10">≈ 2 epochs for 8778 MiB / full 10 GiB</FONT>>, fillcolor="#064e3b", color="#34d399"];
+  direct [label=<Large stable visibility window<BR/><FONT POINT-SIZE="10">most allocations remain addressable without churn</FONT>>, fillcolor="#064e3b", color="#34d399"];
+  fewer [label=<Fixed costs collapse<BR/><FONT POINT-SIZE="10">fewer fences, remaps, lock queues, TLB effects</FONT>>, fillcolor="#064e3b", color="#34d399"];
+  throughput [label=<Throughput-bound desired mode<BR/><FONT POINT-SIZE="10">PCIe / DMA / GPU compute becomes more likely limit</FONT>>, fillcolor="#064e3b", color="#34d399"];
+}
+
+same [label=<Invariant<BR/><FONT POINT-SIZE="10">ReBAR does not reduce bytes transferred; it reduces visibility epochs</FONT>>, fillcolor="#1e1b4b", color="#a78bfa"];
+measure [label=<Only measured S counts<BR/><FONT POINT-SIZE="10">S = elapsed_before / elapsed_after on worlock workload</FONT>>, fillcolor="#451a03", color="#f59e0b"];
+
+workload -> small_visible -> loop -> overhead -> latency;
+workload -> large_visible -> direct -> fewer -> throughput;
+latency -> same [style=dashed]; throughput -> same [style=dashed];
+same -> measure;
+}

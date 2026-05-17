@@ -1,0 +1,56 @@
+digraph ear_threshold {
+    graph [
+        label="Diagram 2: EAR Dual-Use Threshold\nHow BAR restriction keeps consumer SKU below the control line"
+        labelloc=t
+        fontname="Helvetica"
+        fontsize=16
+        rankdir=LR
+        splines=spline
+        bgcolor="white"
+        pad=0.6
+    ]
+    node [fontname="Helvetica" fontsize=11 style=filled]
+    edge [fontname="Helvetica" fontsize=10]
+
+    subgraph cluster_below {
+        label="Below EAR Control Threshold\n(no export license required)"
+        style=filled
+        color="#d4edda"
+        fontsize=12
+
+        rtx3080_launch [label="RTX 3080\n(Launch, Sep 2020)\nBAR1: 256 MiB\nMulti-GPU eff.: degraded\nPeer-to-peer: limited\nLarge-batch training: throttled" shape=box fillcolor="#28a745" fontcolor="white" width=2.5]
+
+        a800 [label="A800 / H800\n(China market, 2022)\nNVLink BW: reduced\nInterconnect: throttled\nHardware-level restriction" shape=box fillcolor="#28a745" fontcolor="white" width=2.5]
+    }
+
+    subgraph cluster_threshold {
+        label="EAR Control Line\n(ECCN 3A090 / BIS performance ceiling)"
+        style=dashed
+        color="#dc3545"
+        fontsize=12
+        fontcolor="#dc3545"
+
+        threshold [label="Aggregate Performance\nThreshold\n(TPP, interconnect BW,\nmemory throughput metrics)" shape=hexagon fillcolor="#dc3545" fontcolor="white" width=2.5]
+    }
+
+    subgraph cluster_above {
+        label="Above EAR Threshold\n(export license required)"
+        style=filled
+        color="#f8d7da"
+        fontsize=12
+
+        a100 [label="A100 / H100\n(Data center, unrestricted markets)\nBAR1: full\nNVLink: full BW\nNo firmware throttle" shape=box fillcolor="#721c24" fontcolor="white" width=2.5]
+
+        rtx3080_rebar [label="RTX 3080\n(Post-ReBAR, Apr 2021)\nBAR1: 8192 MiB\nMulti-GPU eff.: improved\nPeer-to-peer: enabled\n[now closer to threshold]" shape=box fillcolor="#e65100" fontcolor="white" width=2.5]
+    }
+
+    tuning [label="Firmware tuning\ncreates separation\nbetween SKUs\nwithout hardware changes" shape=note fillcolor="#fff3cd" fontcolor="#856404" fontsize=10]
+
+    rtx3080_launch -> threshold [label="BAR restriction\nholds it below" color="#28a745" penwidth=2 style=dashed]
+    a800           -> threshold [label="HW throttle\nholds it below" color="#28a745" penwidth=2 style=dashed]
+    a100           -> threshold [label="exceeds → license\nor market restriction" color="#dc3545" penwidth=2]
+    rtx3080_rebar  -> threshold [label="VBIOS update\nmoves it toward line" color="#e65100" penwidth=2 style=dashed]
+
+    rtx3080_launch -> tuning [style=invis]
+    tuning -> threshold [style=invis]
+}

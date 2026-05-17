@@ -1,0 +1,58 @@
+digraph policy_timeline {
+    graph [
+        label="Diagram 3: The Coordinated Policy Release\nSimultaneous multi-party unlock is inconsistent with organic technical readiness"
+        labelloc=t
+        fontname="Helvetica"
+        fontsize=16
+        rankdir=LR
+        bgcolor="white"
+        pad=0.5
+        splines=ortho
+        nodesep=0.4
+        ranksep=1.2
+    ]
+    node [fontname="Helvetica" fontsize=11 style=filled shape=box]
+    edge [fontname="Helvetica" fontsize=10]
+
+    // Timeline anchor nodes
+    t0 [label="Sep 2020\nLaunch" shape=diamond fillcolor="#6c757d" fontcolor="white"]
+    t1 [label="Feb 2021\nRTX 3060\nlaunches WITH\nReBAR enabled" shape=diamond fillcolor="#17a2b8" fontcolor="white"]
+    t2 [label="Mar–Apr 2021\nCoordinated release:\nNVIDIA + Intel + AMD\n+ all AIB partners" shape=diamond fillcolor="#28a745" fontcolor="white"]
+    t3 [label="Oct 2022\nBIS rule:\nAmpere/Hopper\nChina restrictions" shape=diamond fillcolor="#dc3545" fontcolor="white"]
+    t4 [label="2022–2023\nA800/H800\nhardware-level\nthrottles" shape=diamond fillcolor="#721c24" fontcolor="white"]
+
+    // Party nodes
+    nvidia  [label="NVIDIA\nVBIOS updates\nfor all RTX 30xx" fillcolor="#76b900" fontcolor="white"]
+    intel   [label="Intel\nMotherboard BIOS\nfor 10th/11th gen" fillcolor="#0071c5" fontcolor="white"]
+    amd_cpu [label="AMD\nMotherboard BIOS\nfor Zen 3 / X570" fillcolor="#ed1c24" fontcolor="white"]
+    aib     [label="All AIB Partners\nASUS, MSI, Gigabyte\nEVGA, Zotac..." fillcolor="#6f42c1" fontcolor="white"]
+    ms      [label="Microsoft\nWindows SAM\nsupport update" fillcolor="#00a4ef" fontcolor="white"]
+
+    // What shipped restricted
+    restricted [label="RTX 3080/3090/3070\nship with BAR1=256 MiB\nSilicon supports 8 GiB\nFirmware does not expose it" fillcolor="#ffc107" fontcolor="black"]
+
+    // What the coordinated release required
+    coord [label="Coordinated release required:\n• NVIDIA GPU VBIOS for each SKU\n• Motherboard BIOS from Intel partners\n• Motherboard BIOS from AMD partners\n• AIB-specific VBIOS per model\n• OS/driver support\nAll released within weeks of each other" shape=note fillcolor="#d4edda" fontcolor="#155724"]
+
+    // What happened next (harder controls)
+    harder [label="When softer firmware controls\nproved insufficient for BIS:\nswitch to hardware-level throttles\n(A800, H800 — silicon changes)" shape=note fillcolor="#f8d7da" fontcolor="#721c24"]
+
+    t0 -> restricted [label="ships restricted"]
+    restricted -> t1 [label="3060 launches\nwith restriction\nalready lifted\n(signals readiness)"]
+    t1 -> t2 [label="6 weeks later:\nall prior SKUs\nunlocked together"]
+
+    t2 -> nvidia  [label="releases"]
+    t2 -> intel   [label="releases"]
+    t2 -> amd_cpu [label="releases"]
+    t2 -> aib     [label="releases"]
+    t2 -> ms      [label="releases"]
+
+    t2 -> coord [style=invis]
+    coord -> t3
+
+    t3 -> t4 [label="firmware control\nno longer sufficient\nfor new threat model"]
+    t4 -> harder [style=invis]
+
+    {rank=same; t0 t1 t2 t3 t4}
+    {rank=same; nvidia intel amd_cpu aib ms}
+}

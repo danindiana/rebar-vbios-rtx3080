@@ -1,0 +1,63 @@
+digraph G {
+rankdir=LR;
+label=<EXPORT CONTROL BY SOFTWARE MEANS<BR/><FONT POINT-SIZE="12">Policy thresholds can map onto configurable product behavior without changing the visible chip family</FONT>>;
+
+graph [
+  bgcolor="#05070d",
+  color="#2ee6ff",
+  fontname="DejaVu Sans",
+  fontcolor="#f8fafc",
+  fontsize=18,
+  labelloc="t",
+  margin=0.2,
+  nodesep=0.45,
+  ranksep=0.65,
+  pad=0.25,
+  outputorder="edgesfirst",
+  splines=ortho
+];
+node [
+  shape=box,
+  style="rounded,filled",
+  fontname="DejaVu Sans",
+  fontsize=12,
+  color="#38d9ff",
+  penwidth=1.5,
+  fillcolor="#111827",
+  fontcolor="#f8fafc",
+  margin="0.12,0.08"
+];
+edge [
+  color="#94a3b8",
+  fontname="DejaVu Sans",
+  fontsize=10,
+  fontcolor="#cbd5e1",
+  arrowsize=0.8,
+  penwidth=1.3
+];
+
+node [shape=box];
+
+policy [label=<EAR / BIS policy layer<BR/><FONT POINT-SIZE="10">licensing rules, destination controls, end-use controls</FONT>>, fillcolor="#1e1b4b", color="#a78bfa"];
+metrics [label=<Controlled capability metrics<BR/><FONT POINT-SIZE="10">compute rate, bidirectional transfer rate, interconnect, system scaling</FONT>>, fillcolor="#0f172a", color="#38d9ff"];
+translate [label=<Vendor translation layer<BR/><FONT POINT-SIZE="10">turn legal thresholds into product configuration targets</FONT>>, fillcolor="#172554", color="#60a5fa"];
+
+subgraph cluster_levers {
+  label="Software / firmware control surfaces";
+  fontcolor="#f8fafc"; color="#334155"; style="rounded,dashed";
+  vbios [label=<VBIOS feature table<BR/><FONT POINT-SIZE="10">BAR sizes, power targets, board IDs</FONT>>, fillcolor="#12221b", color="#34d399"];
+  driver [label=<Driver policy<BR/><FONT POINT-SIZE="10">feature enablement, device IDs, runtime gates</FONT>>, fillcolor="#12221b", color="#34d399"];
+  fuse [label=<SKU / fuse / strap config<BR/><FONT POINT-SIZE="10">disabled lanes, clocks, interconnect modes</FONT>>, fillcolor="#12221b", color="#34d399"];
+  updater [label=<Update channel<BR/><FONT POINT-SIZE="10">market-specific firmware packages</FONT>>, fillcolor="#12221b", color="#34d399"];
+}
+
+outcome [label=<Observable system outcome<BR/><FONT POINT-SIZE="10">cluster scaling changes without changing application code</FONT>>, fillcolor="#3b0764", color="#e879f9"];
+compliance [label=<Compliance posture<BR/><FONT POINT-SIZE="10">product sits below selected practical / formal threshold</FONT>>, fillcolor="#451a03", color="#f59e0b"];
+reader [label=<Claim boundary<BR/><FONT POINT-SIZE="10">mechanism plausible; intent must be separately proven</FONT>>, fillcolor="#2a0f14", color="#fb7185"];
+
+policy -> metrics -> translate;
+translate -> vbios; translate -> driver; translate -> fuse; translate -> updater;
+vbios -> outcome; driver -> outcome; fuse -> outcome; updater -> outcome;
+outcome -> compliance;
+compliance -> reader [style=dashed, label="do not overclaim"];
+}
