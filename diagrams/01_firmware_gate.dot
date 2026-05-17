@@ -1,0 +1,62 @@
+digraph firmware_gate {
+    graph [
+        label="Diagram 1: The Firmware Gate\nSilicon capability vs. exposed capability"
+        labelloc=t
+        fontname="Helvetica"
+        fontsize=16
+        rankdir=TB
+        splines=ortho
+        bgcolor="white"
+        pad=0.5
+    ]
+    node [fontname="Helvetica" fontsize=12 style=filled]
+    edge [fontname="Helvetica" fontsize=10]
+
+    subgraph cluster_silicon {
+        label="GA102 Silicon (RTX 3080)\nLaunched Sep 2020"
+        style=filled
+        color="#e8f4f8"
+        fontsize=13
+        fontname="Helvetica-Bold"
+
+        pcie_cap [label="PCIe BAR Resizable\nCapability Register\n(hardware)" shape=box fillcolor="#b8d4e8"]
+        bar1_hw  [label="BAR1 MMIO Window\nHardware Support\n10 GB VRAM addressable" shape=box fillcolor="#b8d4e8"]
+        straps   [label="GPU STRAPS\n(boot-time config bits)" shape=box fillcolor="#b8d4e8"]
+    }
+
+    subgraph cluster_vbios {
+        label="VBIOS Firmware Layer\n(software-controlled)"
+        style=filled
+        color="#fff3cd"
+        fontsize=13
+        fontname="Helvetica-Bold"
+
+        bar1_cfg  [label="BAR1 Size Config\nLaunch: 256 MiB\nPost-V4: 8192 MiB" shape=box fillcolor="#ffc107" fontcolor="black"]
+        rebar_cap [label="ReBAR Capability\nAdvertised to OS?\nLaunch: NO\nPost-V4: YES" shape=box fillcolor="#ffc107" fontcolor="black"]
+        mode_flag [label="GPU Mode Flag\nphysical_display_\nenabled_256MB_bar1\n→ _8GB_bar1" shape=box fillcolor="#ffc107" fontcolor="black"]
+    }
+
+    subgraph cluster_os {
+        label="OS / Driver View"
+        style=filled
+        color="#d4edda"
+        fontsize=13
+        fontname="Helvetica-Bold"
+
+        os_bar   [label="BAR1 exposed to OS\nLaunch:   256 MiB\nPost-V4: 8192 MiB" shape=box fillcolor="#28a745" fontcolor="white"]
+        os_perf  [label="Effective Multi-GPU\nThroughput\nLaunch:   limited\nPost-V4: full" shape=box fillcolor="#28a745" fontcolor="white"]
+    }
+
+    pcie_cap -> bar1_cfg [label="hardware supports\nfull range" style=dashed color="gray40"]
+    bar1_hw  -> bar1_cfg [label="10 GB physically\npresent" style=dashed color="gray40"]
+    straps   -> mode_flag [label="read at boot" style=dashed color="gray40"]
+
+    bar1_cfg  -> os_bar   [label="firmware dictates\nexposed size" color="#e65100" penwidth=2]
+    rebar_cap -> os_bar   [label="capability\nadvertised?" color="#e65100" penwidth=2]
+    mode_flag -> os_bar   [label="mode register\nwritten" color="#e65100" penwidth=2]
+
+    os_bar -> os_perf [label="determines\neffective throughput" penwidth=2 color="#155724"]
+
+    note [label="Key insight:\nSilicon always supported 8 GiB BAR1.\nFirmware suppressed it for 6–18 months.\nVBIOS update = policy release, not\ntechnical breakthrough." shape=note fillcolor="#f8d7da" fontcolor="#721c24" fontsize=11]
+    mode_flag -> note [style=invis]
+}

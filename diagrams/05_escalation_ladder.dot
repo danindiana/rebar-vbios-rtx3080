@@ -1,0 +1,60 @@
+digraph escalation_ladder {
+    graph [
+        label="Diagram 5: The Export Control Escalation Ladder\nFrom firmware throttle to hardware restriction — a progression of means"
+        labelloc=t
+        fontname="Helvetica"
+        fontsize=16
+        rankdir=TB
+        bgcolor="white"
+        pad=0.6
+        splines=spline
+        nodesep=0.8
+        ranksep=0.8
+    ]
+    node [fontname="Helvetica" fontsize=11 style=filled]
+    edge [fontname="Helvetica" fontsize=10]
+
+    // Rungs of the ladder
+    rung0 [label="Rung 0: No restriction\nFull silicon capability exposed\nExample: A100 in unrestricted markets\nBAR1: full | NVLink: full | All modes enabled" shape=box fillcolor="#155724" fontcolor="white" width=5]
+
+    rung1 [label="Rung 1: Firmware / VBIOS throttle\nSilicon unchanged, firmware suppresses capability\nExample: RTX 3080 launch — BAR1=256 MiB\nReversible: yes (VBIOS update restores)\nSelective: yes (per-market VBIOS possible)\nVerifiable: difficult (requires ROM extraction)" shape=box fillcolor="#28a745" fontcolor="white" width=5]
+
+    rung2 [label="Rung 2: Firmware throttle + OEM coordination\nManufacturer coordinates with AIB partners\nAll shipping units carry restriction\nRelease gated on policy signal, not technical readiness\nExample: ReBAR rollout timing, Apr 2021" shape=box fillcolor="#ffc107" fontcolor="black" width=5]
+
+    rung3 [label="Rung 3: Driver-level + firmware restriction\nBoth GPU firmware and driver enforce limit\nRequires compromise of both layers to bypass\nExample: NVLink disabled in consumer drivers\nalongside VBIOS restrictions" shape=box fillcolor="#e65100" fontcolor="white" width=5]
+
+    rung4 [label="Rung 4: Hardware-level throttle\nSilicon physically altered or fused\nNot reversible by software update\nExample: A800 (reduced NVLink die),\nH800 (chip-to-chip BW cut at mask level)\nBIS-driven, 2022–2023" shape=box fillcolor="#dc3545" fontcolor="white" width=5]
+
+    rung5 [label="Rung 5: Export denial\nNo product shipped to jurisdiction\nEntity list / end-user controls\nLicense required, routinely denied\nExample: post-Oct 2023 BIS rule\n(H100/A100 class fully controlled)" shape=box fillcolor="#721c24" fontcolor="white" width=5]
+
+    // Properties column
+    prop1 [label="Reversible\nSelective\nDeniable\nLow cost\nHigh flexibility" shape=note fillcolor="#d4edda" fontcolor="#155724" fontsize=10]
+    prop2 [label="Requires\npartner coordination\nPolicy-timed release\nPlausible technical cover" shape=note fillcolor="#fff3cd" fontcolor="#856404" fontsize=10]
+    prop3 [label="Harder to bypass\nTwo-layer enforcement\nLess market flexibility" shape=note fillcolor="#ffe0b2" fontcolor="#e65100" fontsize=10]
+    prop4 [label="Irreversible\nExpensive (new masks)\nStrong signal of intent\nBIS-visible mechanism" shape=note fillcolor="#f8d7da" fontcolor="#721c24" fontsize=10]
+    prop5 [label="No product\nMaximum restriction\nPolitically visible\nTrade friction" shape=note fillcolor="#e8d5d5" fontcolor="#4a0e0e" fontsize=10]
+
+    // Threat escalation driver
+    threat [label="Threat model escalation driver:\nAs BIS tightens rules and adversaries\ndevelop firmware-bypass capability,\nmanufacturers must move to\nhardware-level controls" shape=ellipse fillcolor="#343a40" fontcolor="white" width=3]
+
+    rung0 -> rung1 [label="policy signal:\nrestrict consumer\nfor dual-use concern" penwidth=2 color="#6c757d"]
+    rung1 -> rung2 [label="scale to\nall market units" penwidth=2 color="#6c757d"]
+    rung2 -> rung3 [label="firmware bypass\ndemonstrated" penwidth=2 color="#e65100"]
+    rung3 -> rung4 [label="BIS rule tightens\nfirmware insufficient" penwidth=2 color="#dc3545"]
+    rung4 -> rung5 [label="technology denial\ncomplete" penwidth=2 color="#721c24"]
+
+    rung1 -> prop1 [style=dashed color="#6c757d" arrowhead=none]
+    rung2 -> prop2 [style=dashed color="#856404" arrowhead=none]
+    rung3 -> prop3 [style=dashed color="#e65100" arrowhead=none]
+    rung4 -> prop4 [style=dashed color="#dc3545" arrowhead=none]
+    rung5 -> prop5 [style=dashed color="#721c24" arrowhead=none]
+
+    rung3 -> threat [style=dashed color="#343a40" arrowhead=none]
+    threat -> rung4 [color="#343a40" penwidth=2]
+
+    {rank=same; rung1 prop1}
+    {rank=same; rung2 prop2}
+    {rank=same; rung3 prop3 threat}
+    {rank=same; rung4 prop4}
+    {rank=same; rung5 prop5}
+}
