@@ -163,6 +163,51 @@ the cost of more PCIe transfers. Worth benchmarking against default.
 
 ---
 
+## ReBAR Speedup — Host CPU Scaling Properties
+
+The remap serialization cost is fixed per operation regardless of core count. What changes
+is what fraction of your total CPU budget that fixed cost consumes.
+
+```
+CPU overhead fraction ≈ remap_cost / (remap_cost + useful_work_per_core × core_count)
+```
+
+As core count drops, the denominator shrinks and the fraction grows. On a 32-core 5950X
+that fraction is noise. On a 4-core system it's material. On a 2-core embedded system it
+can dominate.
+
+The total speedup from ReBAR has two components that scale differently:
+
+```
+S_total = S_pcie_serialization + S_cpu_overhead
+
+S_pcie_serialization  →  roughly constant across core counts
+                          (protocol-level, can't be parallelized away)
+
+S_cpu_overhead        →  grows as core count decreases
+                          (remap lock, TLB shootdowns, IPI cost as fraction of budget)
+```
+
+On worlock, S was almost entirely `S_pcie_serialization`. On a 4-core system running the
+same workload, `S_cpu_overhead` would add meaningfully on top of that. The card benefits
+more, not less, as the host gets weaker.
+
+### Generalization Caveat
+
+The measured S = 2.59× on the 5950X is likely a **floor** for weaker host CPUs running
+the same workload, not a ceiling. Someone running the same 3080 on a budget 6-core Ryzen 5
+would probably measure a higher S, because they were losing more to CPU overhead in the
+256 MiB regime than worlock was.
+
+```
+⊢ Generalization: S is not portable. On weaker host CPUs, S may be
+                  higher than measured on worlock, not lower, because
+                  CPU-side remap overhead consumes a larger fraction
+                  of available compute.
+```
+
+---
+
 ## Files
 
 | File | Purpose |
